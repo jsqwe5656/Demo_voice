@@ -5,6 +5,7 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.provider.Settings;
+import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -42,8 +43,10 @@ public class MainActivity extends AppCompatActivity
     }
 
 
-
-
+    /**
+     *创建快捷方式
+     * @param name
+     */
     private void addShortcut(String name) {
         Intent addShortcutIntent = new Intent(ACTION_ADD_SHORTCUT);
 
@@ -90,6 +93,15 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-
-
+    /**
+     * 处理权限授权回调
+     * @param requestCode
+     * @param permissions
+     * @param grantResults
+     */
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults)
+    {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+    }
 }
