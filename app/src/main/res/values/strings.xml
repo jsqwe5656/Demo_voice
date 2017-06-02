@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">Demo_voice</string>
+    <string name="need_location">需要地理定位权限</string>
+    <string name="need_voice">需要声音录制权限</string>
 </resources>
