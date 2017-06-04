@@ -1,6 +1,7 @@
 package zbf.demo_voice;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.support.annotation.NonNull;
 import android.support.annotation.StringRes;
@@ -24,7 +25,8 @@ import permissions.dispatcher.RuntimePermissions;
 @RuntimePermissions
 public class PermissionsActivity extends AppCompatActivity
 {
-    Button btn_location,btn_voice,btn_camera,btn_ble;
+    Button btn_location, btn_voice, btn_camera, btn_ble;
+
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
@@ -55,6 +57,14 @@ public class PermissionsActivity extends AppCompatActivity
                 PermissionsActivityPermissionsDispatcher.showVoiceWithCheck(PermissionsActivity.this);
             }
         });
+        btn_camera.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View view)
+            {
+                PermissionsActivityPermissionsDispatcher.showCameraWithCheck(PermissionsActivity.this);
+            }
+        });
     }
 
     @NeedsPermission(Manifest.permission.ACCESS_COARSE_LOCATION)
@@ -69,43 +79,71 @@ public class PermissionsActivity extends AppCompatActivity
         showToast("需要录音权限");
     }
 
+    @NeedsPermission(Manifest.permission.CAMERA)
+    void showCamera()
+    {
+        showToast("需要相机权限");
+    }
+
+    @OnShowRationale(Manifest.permission.CAMERA)
+    void showRationaleForCamera(PermissionRequest request)
+    {
+        showRationaleDialog(PermissionsActivity.this,R.string.need_camera, request);
+    }
+
     @OnShowRationale(Manifest.permission.ACCESS_COARSE_LOCATION)
     void showWhyLocation(PermissionRequest request)
     {
-        showRationaleDialog(R.string.need_location,request);
+        showRationaleDialog(PermissionsActivity.this,R.string.need_location, request);
     }
 
     @OnShowRationale(Manifest.permission.RECORD_AUDIO)
     void showWhyVoice(PermissionRequest request)
     {
         // 提示用户权限使用的对话框
-        showRationaleDialog(R.string.need_voice,request);
+        showRationaleDialog(PermissionsActivity.this,R.string.need_voice, request);
     }
 
-    @OnPermissionDenied({Manifest.permission.ACCESS_COARSE_LOCATION,Manifest.permission.RECORD_AUDIO})
-    void onDenied()
+    @OnPermissionDenied(Manifest.permission.CAMERA)
+    void onCameraDenied()
+    {
+        showToast("zbf is the best");
+    }
+
+    @OnPermissionDenied(Manifest.permission.ACCESS_COARSE_LOCATION)
+    void onLocationDenied()
     {
         showToast("不给权限用不了啊亲");
     }
 
-    @OnNeverAskAgain({Manifest.permission.ACCESS_COARSE_LOCATION,Manifest.permission.RECORD_AUDIO})
-    void onNotAsk()
+    @OnNeverAskAgain(Manifest.permission.ACCESS_COARSE_LOCATION)
+    void onLocationNeverAsk()
     {
         showToast("好吧好吧你牛逼");
     }
 
+    @OnNeverAskAgain(Manifest.permission.CAMERA)
+    void onCameraNeverAskAgain()
+    {
+        showToast("asdasdasdasd");
+    }
 
-    private void showRationaleDialog(@StringRes int messageResId, final PermissionRequest request) {
-        new AlertDialog.Builder(this)
-                .setPositiveButton("同意", new DialogInterface.OnClickListener() {
+    public static void showRationaleDialog(Context context,@StringRes int messageResId, final PermissionRequest request)
+    {
+        new AlertDialog.Builder(context)
+                .setPositiveButton("同意", new DialogInterface.OnClickListener()
+                {
                     @Override
-                    public void onClick(@NonNull DialogInterface dialog, int which) {
+                    public void onClick(@NonNull DialogInterface dialog, int which)
+                    {
                         request.proceed();                  //执行请求
                     }
                 })
-                .setNegativeButton("不同意", new DialogInterface.OnClickListener() {
+                .setNegativeButton("不同意", new DialogInterface.OnClickListener()
+                {
                     @Override
-                    public void onClick(@NonNull DialogInterface dialog, int which) {
+                    public void onClick(@NonNull DialogInterface dialog, int which)
+                    {
                         request.cancel();
                     }
                 })
@@ -117,19 +155,20 @@ public class PermissionsActivity extends AppCompatActivity
 
     void showToast(String values)
     {
-        Toast.makeText(PermissionsActivity.this,values,Toast.LENGTH_SHORT).show();
+        Toast.makeText(PermissionsActivity.this, values, Toast.LENGTH_SHORT).show();
     }
 
     /**
      * 权限请求回调，提示用户之后，用户点击“允许”或者“拒绝”之后调用此方法
+     *
      * @param requestCode  定义的权限编码
-     * @param permissions 权限名称
+     * @param permissions  权限名称
      * @param grantResults 允许/拒绝
      */
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults)
     {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        PermissionsActivityPermissionsDispatcher.onRequestPermissionsResult(this,requestCode,grantResults);
+        PermissionsActivityPermissionsDispatcher.onRequestPermissionsResult(this, requestCode, grantResults);
     }
 }

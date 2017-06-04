@@ -27,11 +27,22 @@ import com.carlos.voiceline.mylibrary.VoiceLineView;
 
 import java.util.ArrayList;
 
+import permissions.dispatcher.NeedsPermission;
+import permissions.dispatcher.OnNeverAskAgain;
+import permissions.dispatcher.OnPermissionDenied;
+import permissions.dispatcher.OnShowRationale;
+import permissions.dispatcher.PermissionRequest;
+import permissions.dispatcher.RuntimePermissions;
 
+/**
+ * 录制声音demo
+ * 显示声音波形及动态录音授权
+ */
+@RuntimePermissions
 public class MainActivity extends AppCompatActivity
 {
     VoiceLineView voiceLineView;
-    Button btn;
+    Button btn, btn_start;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -40,20 +51,60 @@ public class MainActivity extends AppCompatActivity
         setContentView(R.layout.activity_main);
         voiceLineView = (VoiceLineView) findViewById(R.id.voiceline);
         btn = (Button) findViewById(R.id.btn);
+        btn_start = (Button) findViewById(R.id.btn_start);
 //        requestAlertWindowPermission();
         addDesktopIcon(this);
         //申请权限
 //        requestPermission();
-        checkPermissions();
+//        checkPermissions();
         btn.setOnClickListener(new View.OnClickListener()
         {
             @Override
             public void onClick(View view)
             {
-                startActivity(new Intent(MainActivity.this,PermissionsActivity.class));
+                startActivity(new Intent(MainActivity.this, PermissionsActivity.class));
+            }
+        });
+
+        btn_start.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View view)
+            {
+                MainActivityPermissionsDispatcher.showVoiceWithCheck(MainActivity.this);
             }
         });
     }
+
+    /**
+     *  TODO
+     * 拥有权限之后执行的方法
+     */
+    @NeedsPermission(Manifest.permission.RECORD_AUDIO)
+    void showVoice()
+    {
+        showToast("需要录音权限");
+    }
+
+    @OnShowRationale(Manifest.permission.RECORD_AUDIO)
+    void showWhyVoice(PermissionRequest request)
+    {
+        // 提示用户权限使用的对话框
+        PermissionsActivity.showRationaleDialog(MainActivity.this,R.string.need_voice, request);
+    }
+
+    @OnPermissionDenied(Manifest.permission.RECORD_AUDIO)
+    void onLocationDenied()
+    {
+        showToast("不给权限用不了啊亲");
+    }
+
+    @OnNeverAskAgain(Manifest.permission.RECORD_AUDIO)
+    void onLocationNeverAsk()
+    {
+        showToast("好吧好吧你牛逼");
+    }
+
 
     String TAG_zbf = "zbf";
 
@@ -69,8 +120,7 @@ public class MainActivity extends AppCompatActivity
             if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.READ_CONTACTS))
             {
                 Log.e(TAG_zbf, "123456");
-            }
-            else
+            } else
             {
                 //上下文，权限组，返回值
                 ActivityCompat.requestPermissions(this,
@@ -155,12 +205,10 @@ public class MainActivity extends AppCompatActivity
         try
         {
             resolver.applyBatch(ContactsContract.AUTHORITY, operations);
-        }
-        catch (RemoteException e)
+        } catch (RemoteException e)
         {
             Log.d(TAG, "Could not add a new contact: " + e.getMessage());
-        }
-        catch (OperationApplicationException e)
+        } catch (OperationApplicationException e)
         {
             Log.d(TAG, "Could not add a new contact: " + e.getMessage());
         }
@@ -212,32 +260,21 @@ public class MainActivity extends AppCompatActivity
     }
 
     /**
-     * 处理权限授权回调
+     * 权限请求回调，提示用户之后，用户点击“允许”或者“拒绝”之后调用此方法
      *
-     * @param requestCode
-     * @param permissions
-     * @param grantResults
+     * @param requestCode  定义的权限编码
+     * @param permissions  权限名称
+     * @param grantResults 允许/拒绝
      */
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults)
     {
-        Log.e(TAG_zbf, requestCode + "," + permissions + "," + grantResults);
-        switch (requestCode)
-        {
-            case 12138:
-            {
-                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED)
-                {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        MainActivityPermissionsDispatcher.onRequestPermissionsResult(this, requestCode, grantResults);
+    }
 
-                }
-                else
-                {
-
-                }
-                return;
-            }
-
-        }
-
+    void showToast(String values)
+    {
+        Toast.makeText(MainActivity.this, values, Toast.LENGTH_SHORT).show();
     }
 }
